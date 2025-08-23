@@ -14,29 +14,51 @@ import (
 )
 
 
-func GetPageContent(url string) ([]byte, error) {
-	resp, err := http.Get(url)
+func GetContent(url string, client *http.Client) ([]byte, error) {
+	body, err := FetchBody(url, client)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer body.Close()
+
+	return io.ReadAll(body)
+}
+
+func GetParsedContent(url string, client *http.Client) (*html.Node, error) {
+	body, err := FetchBody(url, client)
+	if err != nil {
+		return nil, err
+	}
+	defer body.Close()
+
+	return html.Parse(body)
+}
+
+func FetchBody(url string, client *http.Client) (io.ReadCloser, error) {
+	resp, err := client.Get(url)
+	if err != nil {
+		return nil, err
+	}
 
 	if resp.StatusCode != http.StatusOK {
+		resp.Body.Close()
 		return nil, fmt.Errorf("non-200 status code: %d", resp.StatusCode)
 	}
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return resp.Body, nil
 }
 
-func GetOnionContent(url string) ([]byte, error) {
-    socksProxy := "127.0.0.1:9050"
+func HttpClient() *http.Client {
+	return &http.Client{Timeout: 30 * time.Second}
+}
 
-    dialer, err := proxy.SOCKS5("tcp", socksProxy, nil, proxy.Direct)
+func OnionClient(socksProxy *string) (*http.Client, error) {
+	if socksProxy == nil {
+        defaultProxy := "127.0.0.1:9050"
+        socksProxy = &defaultProxy
+	}
+
+    dialer, err := proxy.SOCKS5("tcp", *socksProxy, nil, proxy.Direct)
     if err != nil {
         return nil, err
     }
@@ -51,41 +73,11 @@ func GetOnionContent(url string) ([]byte, error) {
         Timeout:   30 * time.Second,
     }
 
-    resp, err := client.Get(url)
-    if err != nil {
-        return nil, err
-    }
-    defer resp.Body.Close()
-
-    if resp.StatusCode != http.StatusOK {
-        return nil, fmt.Errorf("bad status: %s", resp.Status)
-    }
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return client, nil
 }
 
-func GetParsedPageContent(url string) (*html.Node, error){
-	resp, err := http.Get(url)
-	if (err != nil) {
-		return &html.Node{}, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return &html.Node{}, err
-	}
-
-	return html.Parse(resp.Body)
-}
-
-func DownloadDocumentReturnHash(url string, filePath string) (string, error) {
-	data, err := GetPageContent(url)
-
+func DownloadDocumentReturnHash(url string, filePath string, client *http.Client) (string, error) {
+	body, err := FetchBody(url, client)
 	if err != nil {
 		return "", err
 	}
@@ -100,20 +92,25 @@ func DownloadDocumentReturnHash(url string, filePath string) (string, error) {
 	}
 	defer file.Close()
 
-	_, err = file.Write([]byte(data))
-	if err != nil {
-		return "", err
-	}
-
-	if _, err := file.Seek(0, io.SeekStart); err != nil {
-		return "", err
-	}
-
 	hasher := sha256.New()
-	if _, err := io.Copy(hasher, file); err != nil {
+	writer := io.MultiWriter(file, hasher)
+
+	if _, err := io.Copy(writer, body); err != nil {
 		return "", err
 	}
 
-	// Convert byte to string
 	return fmt.Sprintf("%x", hasher.Sum(nil)), nil
+}
+
+func showcase() {
+	_, err := GetContent("https://bl4omarchie.github.io/archX/", HttpClient())
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	client, err := OnionClient(nil)
+	_, err = GetParsedContent("http://darkfailenbsdla5mal2mxn2uz66od5vtzd5qozslagrfzachha3f3id.onion/", client)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
