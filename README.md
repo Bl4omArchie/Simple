@@ -15,15 +15,29 @@ For now, it provides utility functions that help with the development of small s
     - fetch web content and parse HTML documents
     - download documents with hash computation
 
+- Hash functions :
+    - functions supported : sha224, sha256, sha384, sha512, sha3 family and md5
+    - buffer feature that allow hashing a file, block by block for better efficiency
+    - constant variable for easy buffer size picking
+
 
 # Development
 
 The package is currently at version v0.1.0 as I continue to write tests and improve the codebase.
 Once the tests are stable, I'll release the v1 of the package.
 
-✅ v0.1.0 : current version
-🪜 v0.2.0 : more feature for database and major rework of requests with a clean client management
-➡️ v0.2.1 : for database feature, add optional parameters for more flexible configuration
-🪜 v0.2.2 : add Context for database and requests
-🪜 v0.3.0 : test for database and requests
-🚩 v1.0.0 : first release, full revision of the code and comments above the functions
+- 🚩 **v0.1.0** : first commit
+- 🪜 **v0.2.0** : more feature for database and major rework of requests with a clean client management
+- 🪜 **v0.2.1** : add Hash feature
+- ➡️ **v0.2.2** : add optional parameters for more flexible DSN, add support for advanced driver configuration and existing database connection.
+- 🪜 **v0.2.3** : add Context for database and requests
+- 🪜 **v0.2.4** : generic interface for more hash functions (blake, shake...)
+- 🪜 **v0.3.0** : test for database and requests
+- 🏁 **v1.0.0** : first release, full revision of the code and comments above the functions
+
+
+# Dependencies
+
+- Database features are based on the [GORM](https://gorm.io) library  
+- Requests features are based on Go’s standard [net/http](https://pkg.go.dev/net/http) package
+- Hash features are based on Go’s standard [crypto](golang.org/x/crypto) package
