@@ -1,7 +1,13 @@
 # Changelog
 
-**29/08/25**
-- add hash feature : HashFile(), HashFileBuffer(), HashData(), CompareFile()
+**31/09/2025**
+- add Registry and RegistryKey for hashl
+- add more hash functions : blake2b-256, blake2b-384, blake2b-512, blake2s-128, blake2s-256, shake-128 and shake-256
+- add Test for hash and env
+- add Mock for requests
+
+**29/08/2025**
+- add hash feature : HashFile(), HashFileBuffer(), HashData(), CompareFile()gvfd
 - buffer size constant : buf_32_kb, buf_64_kb, buf_1_mb, buf_5_mb and buf_10_mb
 - working on generic interface for more hash functions. Only sha registry available.
 
@@ -10,8 +16,8 @@
 - start working on OpenEnv()
 - get your client more easily with httpClient() and onionClient()
 - with the new client system, there is now only FetchBody(), GetContent() and GetParsedContent(). Now youu have to specify the client
-- update DownloadDocumentReturnHash() with multiwriting
-- Fix made on Mysql and Postgresql DSN
+- update DownloadDocumentReturnHash() with multiwriting 
+- Fix made on Mysql and Postgresql DSN  
 - add Clickhouse and GaussDB
 
 (**21/08/2025**) First commit

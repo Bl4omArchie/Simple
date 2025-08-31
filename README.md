@@ -29,10 +29,9 @@ Once the tests are stable, I'll release the v1 of the package.
 - 🚩 **v0.1.0** : first commit
 - 🪜 **v0.2.0** : more feature for database and major rework of requests with a clean client management
 - 🪜 **v0.2.1** : add Hash feature
-- ➡️ **v0.2.2** : add optional parameters for more flexible DSN, add support for advanced driver configuration and existing database connection.
-- 🪜 **v0.2.3** : add Context for database and requests
-- 🪜 **v0.2.4** : generic interface for more hash functions (blake, shake...)
-- 🪜 **v0.3.0** : test for database and requests
+- ➡️ **v0.2.2** : new feature OpenEnv() + improve registry for Hash featuure + add Test for hash and env + add Mock for requests
+- 👷‍♂️ **v0.2.3** : add optional parameters for more flexible DSN, add support for advanced driver configuration and existing database connection.
+- 🪜 **v0.2.4** : add Context for database and requests
 - 🏁 **v1.0.0** : first release, full revision of the code and comments above the functions
 
 

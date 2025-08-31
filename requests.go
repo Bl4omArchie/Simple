@@ -102,15 +102,3 @@ func DownloadDocumentReturnHash(url string, filePath string, client *http.Client
 	return fmt.Sprintf("%x", hasher.Sum(nil)), nil
 }
 
-func showcase() {
-	_, err := GetContent("https://bl4omarchie.github.io/archX/", HttpClient())
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	client, err := OnionClient(nil)
-	_, err = GetParsedContent("http://darkfailenbsdla5mal2mxn2uz66od5vtzd5qozslagrfzachha3f3id.onion/", client)
-	if err != nil {
-		fmt.Println(err)
-	}
-}
