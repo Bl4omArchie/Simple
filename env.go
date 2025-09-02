@@ -24,7 +24,7 @@ func OpenEnv(tags ...string) []string {
 	return tagsSlice
 }
 
-// Open a .env file with one or more filename
+// Merge several .env files and 
 // Return results in a slice of string
 func OpenEnvFilenames(filenames []string, tags ...string) []string {
 	err := godotenv.Load(filenames ...)

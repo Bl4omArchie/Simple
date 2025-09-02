@@ -3,105 +3,87 @@ package simple
 
 import (
 	"fmt"
-	"gorm.io/gorm"
-
-	"gorm.io/driver/mysql"
-	"gorm.io/driver/sqlite"
-	"gorm.io/driver/gaussdb"
-	"gorm.io/driver/postgres"
-	"gorm.io/driver/clickhouse"
-	"github.com/joho/godotenv"
+	"sync"
+	"database/sql"
 )
 
-type DialectorFactory func(dsn string) gorm.Dialector
 
-var dialectorRegistry = map[string]DialectorFactory{
-	"sqlite":   sqlite.Open,
-	"mysql":    mysql.Open,
-	"postgres": postgres.Open,
-	"gaussdb": gaussdb.Open,
-	"clickhouse": clickhouse.Open,
+type DatabaseManager interface {
+	Open(dbName string, dsn string) error
+	Close() error
+	Query(query string, args ...string) (*sql.Rows, error)
 }
 
-
-// TODO
-func OpenEnv() (*gorm.DB) {
-	err := godotenv.Load()
-	if err != nil {
-		fmt.Printf("Some error occured. Err: %s", err)
-	}
-	return nil
+// Default database manager
+type Database struct {
+	Dsn string
+	Conn *sql.DB
+	Driver string
+	PingSuccess bool
+	mu *sync.Mutex
 }
 
-func OpenGaussdb(host string, user string, password string, dbName string, port int, sslMode string) (*gorm.DB, error) {
-	db, err := OpenDatabase("gaussdb", fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s", host, user, password, dbName, port, sslMode))
-	return db, err
-}
-
-func OpenClickhouse( user string, password string, host string, port int, dbName string) (*gorm.DB, error) {
-	db, err := OpenDatabase("clickhouse", fmt.Sprintf("clickhouse://%s:%s@%s:%d/%s?read_timeout=10s&write_timeout=20s", user, password, host, port, dbName))
-	return db, err
-}
-
-func OpenSqlite(name string) (*gorm.DB, error) {
-	db, err := OpenDatabase("sqlite", name)
-	return db, err
-}
-
-func OpenSqliteMemory() (*gorm.DB, error) {
-	db, err := OpenDatabase("sqlite", ":memory:")
-	return db, err
-}
-
-func OpenMysql(user string, password string, host string, port int, dbName string) (*gorm.DB, error) {
-	db, err := OpenDatabase("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local", user, password, host, port, dbName))
-	return db, err
-}
-
-func OpenMysqlUnixSocket(user, password, socket, dbName string) (*gorm.DB, error) {
-    dsn := fmt.Sprintf("%s:%s@unix(%s)/%s?charset=utf8mb4&parseTime=True&loc=UTC", user, password, socket, dbName)
-    return OpenDatabase("mysql", dsn)
-}
-
-func OpenPostgres(host string, user string, password string, dbName string, port int, sslMode string) (*gorm.DB, error) {
-	db, err := OpenDatabase("postgres", fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s", host, user, password, dbName, port, sslMode))
-	return db, err
-}
-
-func OpenDatabase(driver string, dsn string) (*gorm.DB, error) {
-	factory, ok := dialectorRegistry[driver]
-	if !ok {
-		return nil, fmt.Errorf("unsupported driver: %s", driver)
-	}
-	dialector := factory(dsn)
-
-	db, err := gorm.Open(dialector, &gorm.Config{})
-	if err != nil {
-		return nil, fmt.Errorf("failed to open database: %w", err)
+func OpenDatabase(driver string, dsn string) (*Database, error) {
+	db := &Database{}
+	if err := db.Open(driver, dsn); err != nil {
+		return nil, fmt.Errorf("%w", err)
 	}
 	return db, nil
 }
 
-func CloseDatabase(db *gorm.DB) error {
-	sqlDB, err := db.DB()
+func (db *Database) Open(driver string, dsn string) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	conn, err := sql.Open(driver, dsn)
 	if err != nil {
-		return fmt.Errorf("failed to get underlying sql.DB: %w", err)
+		return fmt.Errorf("Couldn't connect to the database : %w", err)
 	}
-	return sqlDB.Close()
-}
 
-func MigrateTables(db *gorm.DB, tables ...any) error {
-	if err := db.AutoMigrate(tables...); err != nil {
-		return fmt.Errorf("migration failed: %w", err)
+	if err := conn.Ping(); err != nil {
+		conn.Close()
+		db.PingSuccess = false
+		return fmt.Errorf("ping to database failed: %w", err)
 	}
+
+	db.Dsn = dsn
+	db.Conn = conn
+	db.Driver = driver
+	db.PingSuccess = true
 	return nil
 }
 
-func InsertRows(db *gorm.DB, entries ...any) error {
-	for _, entry := range entries {
-		if err := db.Create(entry).Error; err != nil {
-			return fmt.Errorf("failed to insert row: %w", err)
-		}
+func (db *Database) Close() error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	if db.Conn != nil {
+		db.Conn = nil
+		return db.Conn.Close()
 	}
-	return nil
+	return fmt.Errorf("Error while closing database : database not initialized")
+}
+
+// Issue : leaking connection with rows.
+func (db *Database) Query(query string, args ...any) (*sql.Rows, error) {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	rows, err := db.Conn.Query(query, args)
+	if err != nil {
+		return nil, fmt.Errorf("query has failed : %w", err)
+	}
+	return rows, nil
+}
+
+func GetMysql(user string, password string, host string, port string, dbName string) (string, string) {
+	return "mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", user, password, host, port, dbName)
+}
+
+func GetPostgres(host string, user string, password string, dbName string, port int, sslMode string, timezone string) (string, string) {
+	return "postgres", fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s, TimeZone=%s", host, user, password, dbName, port, sslMode, timezone)
+}
+
+func GetSqlite(filePath string) (string, string) {
+	return "sqlite", filePath
 }
