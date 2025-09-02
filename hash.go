@@ -41,8 +41,6 @@ func (x *shakeAdapter) BlockSize() int { return x.shake.BlockSize() }
 
 
 var Registry = map[string]func() hash.Hash{
-	"md5": md5.New,	      	  // insecure, legacy only
-	"sha1": sha1.New,		  // insecure, legacy only
 	"sha256": sha256.New,
 	"sha384": sha512.New384,
 	"sha512": sha512.New,
@@ -56,6 +54,12 @@ var Registry = map[string]func() hash.Hash{
 	"shake-256": func() hash.Hash {
 		return &shakeAdapter{shake: sha3.NewShake256(), length: 64}
 	},
+}
+
+// Legacy hash not supported yet.
+var RegistryLegacy = map[string]func() hash.Hash {
+	"md5": md5.New,	      	  // insecure, legacy only
+	"sha1": sha1.New,		  // insecure, legacy only
 }
 
 type HashKeyFactory func(key []byte) (hash.Hash, error)
@@ -208,4 +212,3 @@ func CompareFilesKey(hash string, keyA []byte, fileA string, keyB []byte, fileB 
 
 	return hashA == hashB, nil
 }
-
