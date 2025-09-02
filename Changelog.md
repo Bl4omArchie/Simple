@@ -1,10 +1,19 @@
 # Changelog
 
+
+**02/09/2025**
+- add DatabaseManager interface for utilities task such as connection, sql requests
+- add easy database driver selection for mysql, postgresql and sqlite.
+- add DownloadDocument()
+- add new registry for legacy hash functions
+- update roadmap in the README
+
 **31/09/2025**
 - add Registry and RegistryKey for hashl
 - add more hash functions : blake2b-256, blake2b-384, blake2b-512, blake2s-128, blake2s-256, shake-128 and shake-256
 - add Test for hash and env
 - add Mock for requests
+- add MIT license
 
 **29/08/2025**
 - add hash feature : HashFile(), HashFileBuffer(), HashData(), CompareFile()gvfd
