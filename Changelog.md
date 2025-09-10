@@ -1,6 +1,10 @@
 # Changelog
 
 
+**10/09/2025**
+- add new feature, Deserializer.
+- support the following file format : json, yaml, toml and xml. 
+
 **02/09/2025**
 - add DatabaseManager interface for utilities task such as connection, sql requests
 - add easy database driver selection for mysql, postgresql and sqlite.

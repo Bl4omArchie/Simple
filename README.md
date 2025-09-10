@@ -38,6 +38,11 @@ While I am developing, I am improving the package day by day. Finding new ideas 
     - Use the gotenv package to pick up your env variables easily
 
 
+- Deserialize and parse files :
+    - open your files and parse the content into your struct
+    - supported file format : json, yaml, toml and xml
+
+
 # Development
 
 ## v0 to v1 :
@@ -45,9 +50,18 @@ While I am developing, I am improving the package day by day. Finding new ideas 
 - 🪜 **v0.2.0** : more feature for database and major rework of requests with a clean client management
 - 🪜 **v0.2.1** : add Hash feature
 - 🪜 **v0.2.2** : add Env feature + add Test and Mock + small improvements
-- ➡️ **v0.2.3** : rework of Database feature + small fixes and improvements
-- 👷‍♂️ **v0.2.4** : add new Context as a new feature for easy context creation 
+- 🪜 **v0.2.3** : rework of Database feature + small fixes and improvements
+- ➡️ **v0.2.4** : add new feature Deserializer for opening files like json or yaml and parse it into your struct
+- 👷‍♂️ **v0.2.5** : add Context as a new feature for easy context creation 
 - 🏁 **v1.0.0** : first release, full revision of the code + comments
+
+## TODO :
+- fix leak issue with Query()
+- create new feature Context
+- make every feature support Context
+- improvement for Requests feature
+- add more encoding to deserialize
+- add suport for legacy hash registry
 
 ## v1 and further :
 
@@ -64,3 +78,8 @@ While I am developing, I am improving the package day by day. Finding new ideas 
 - Requests features are based on Go’s standard [net/http](https://pkg.go.dev/net/http) package
 - Hash features are based on Go’s standard [crypto](golang.org/x/crypto) package
 - Env features are based on [gotenv](https://github.com/subosito/gotenv) package
+- Deserialize features are based on 
+    - Go’s standard [encoding](https://pkg.go.dev/encoding/xml) package
+    - [go-toml](github.com/pelletier/go-toml) package
+    - [yaml.v3](gopkg.in/yaml.v3) package
+    - [validator](github.com/go-playground/validator/v10) package
