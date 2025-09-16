@@ -95,24 +95,56 @@ const (
 )
 
 
-func HashFile(hash string, filePath string) (string, error) {
+func bufferSize(fileSize int64) int {
+    switch {
+    case fileSize < 10*MB:
+        return 32 * KB
+    case fileSize < 1024*MB:
+        return 1 * MB
+    default:
+        return 5 * MB
+    }
+}
+
+// hash a file with moist effective buffer size
+func HashFile(hash, filePath string) (string, error) {
+    fi, err := os.Stat(filePath)
+    if err != nil {
+        return "", fmt.Errorf("stat file: %w", err)
+    }
+
+    bufSize := bufferSize(fi.Size())
+
     file, err := os.Open(filePath)
     if err != nil {
-        return "", fmt.Errorf("couldn't open file: %w", err)
+        return "", fmt.Errorf("open file: %w", err)
     }
     defer file.Close()
 
-	factory, ok := Registry[strings.ToLower(hash)]
-	if !ok {
-		return "", fmt.Errorf("unsupported hash: %s", hash)
-	}
+    factory, ok := Registry[strings.ToLower(hash)]
+    if !ok {
+        return "", fmt.Errorf("unsupported hash: %s", hash)
+    }
 
-	hasher := factory()
-	if _, err := io.Copy(hasher, file); err != nil {
-		return "", fmt.Errorf("couldn't hash file: %w", err)
-	}
+    hasher := factory()
+    buf := make([]byte, bufSize)
 
-	return hex.EncodeToString(hasher.Sum(nil)), nil
+    for {
+        n, err := file.Read(buf)
+        if n > 0 {
+            if _, werr := hasher.Write(buf[:n]); werr != nil {
+                return "", fmt.Errorf("hash write: %w", werr)
+            }
+        }
+        if err == io.EOF {
+            break
+        }
+        if err != nil {
+            return "", fmt.Errorf("read file: %w", err)
+        }
+    }
+
+    return hex.EncodeToString(hasher.Sum(nil)), nil
 }
 
 func HashFileKey(hash string, key []byte, filePath string) (string, error) {
@@ -139,39 +171,7 @@ func HashFileKey(hash string, key []byte, filePath string) (string, error) {
 	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
 
-func HashFileBuffer(hash string, filePath string, bufSize int) (string, error) {
-	file, err := os.Open(filePath)
-    if err != nil {
-        return "", fmt.Errorf("couldn't open file: %w", err)
-    }
-    defer file.Close()
-
-	factory, ok := Registry[strings.ToLower(hash)]
-	if !ok {
-		return "", fmt.Errorf("unsupported hash: %s", hash)
-	}
-
-	hasher := factory()
-	buf := make([]byte, bufSize)
-	for {
-		n, err := file.Read(buf)
-		if n > 0 {
-			if _, werr := hasher.Write(buf[:n]); werr != nil {
-				return "", fmt.Errorf("error while hashing : %w", werr)
-			}
-		}
-
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return "", fmt.Errorf("read file: %w", err)
-		}
-	}
-
-	return hex.EncodeToString(hasher.Sum(nil)), nil
-}
-
+// hash a given byte string
 func HashData(hash string, data []byte) (string, error) {
 	factory, ok := Registry[strings.ToLower(hash)]
 	if !ok {
@@ -185,6 +185,7 @@ func HashData(hash string, data []byte) (string, error) {
     return hex.EncodeToString(hasher.Sum(nil)), nil
 }
 
+// compare two files
 func CompareFiles(hash string, fileA string, fileB string) (bool, error) {
 	hashA, errorA := HashFile(hash, fileA)
     if errorA != nil {
