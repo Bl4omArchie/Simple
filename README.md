@@ -1,6 +1,6 @@
 # Simple package
 
-Simple is a lightweight Go package designed for utilities tasks. Avoid boilerplate and insecure code and make it simple!
+Simple is a lightweight Go package designed for utilities tasks.
 
 The package is currently in its early v1. The purpose of this package is to get simple functions with strong features like context management, easy configuration, algorithm efficiency or default security.
 While I am developing, I am improving the package day by day. Finding new ideas and ways to make the features even more simpler. Don't mind sharing your thoughts and advice.
