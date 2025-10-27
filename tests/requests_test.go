@@ -1,9 +1,11 @@
-package simple
+package test
 
 import (
 	"testing"
 	"net/http"
 	"net/http/httptest"
+
+	"github.com/Bl4omArchie/simple"
 )
 
 
@@ -12,8 +14,8 @@ func TestGetContentMock(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("hello world"))	}))
 	defer ts.Close()
 
-	client := HttpClient()
-	content, err := GetContent(ts.URL, client)
+	client := simple.HttpClient()
+	content, err := simple.GetContent(ts.URL, client)
 	if err != nil {
 		t.Fatalf("GetContent failed: %v", err)
 	}

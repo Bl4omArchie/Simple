@@ -1,9 +1,11 @@
-package simple
+package test
 
 
 import (
 	"os"
 	"testing"
+
+	"github.com/Bl4omArchie/simple"
 )
 
 
@@ -16,7 +18,7 @@ func TestOpenEnv(t *testing.T) {
 	}
 	defer os.Remove(".env")
 
-	got := OpenEnv("DB_HOST", "DB_PASS")
+	got := simple.OpenEnv("DB_HOST", "DB_PASS")
 	want := []string{"test", "password"}
 
 	for i := range want {
@@ -41,7 +43,7 @@ func TestOpenEnvFilenames(t *testing.T) {
 	defer os.Remove("db.env")
 
 
-	got := OpenEnvFilenames([]string{"test.env", "db.env"}, "DB_HOST", "DB_PASS", "DB_HOST2", "DB_PASS2")
+	got := simple.OpenEnvFilenames([]string{"test.env", "db.env"}, "DB_HOST", "DB_PASS", "DB_HOST2", "DB_PASS2")
 	want := []string{"test", "password", "test2", "password2"}
 
 	for i := range want {

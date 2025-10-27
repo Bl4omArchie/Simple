@@ -1,8 +1,13 @@
-package simple
+package test
 
 import (
 	"os"
+	"fmt"
+	"crypto/rand"
+	"os/exec"
 	"testing"
+
+	"github.com/Bl4omArchie/simple"
 )
 
 // Test HashData
@@ -22,7 +27,7 @@ func TestHashData(t *testing.T) {
 	}
 
     for algo, exp := range expected {
-        h, err := HashData(algo, data)
+        h, err := simple.HashData(algo, data)
         if err != nil {
             t.Errorf(algo, "error:", err)
             continue
@@ -46,7 +51,7 @@ func TestCompareFiles(t *testing.T) {
 	}
 	defer os.Remove("test2.txt")
 
-	got, err := CompareFiles("sha256", "test1.txt", "test2.txt")
+	got, err := simple.CompareFiles("sha256", "test1.txt", "test2.txt")
 	if err != nil {
 		t.Errorf("Error while hashing : %v", err)
 	}
@@ -70,7 +75,7 @@ func TestCompareFilesKey(t *testing.T) {
 	}
 	defer os.Remove("test2.txt")
 
-	got, err := CompareFilesKey("blake2b-256", []byte("key1"), "test1.txt", []byte("key1"), "test2.txt")
+	got, err := simple.CompareFilesKey("blake2b-256", []byte("key1"), "test1.txt", []byte("key1"), "test2.txt")
 	if err != nil {
 		t.Errorf("Error while hashing : %v", err)
 	}
@@ -78,5 +83,41 @@ func TestCompareFilesKey(t *testing.T) {
 
 	if got != want {
 		t.Errorf("got %v, wanted %v", got, want)
+	}
+}
+
+func BenchmarkHashFile(b *testing.B) {
+	file := "test_large.txt"
+
+	// create 1GB file using truncate
+	cmd := exec.Command("truncate", "-s", "1G", file)
+	if err := cmd.Run(); err != nil {
+		b.Fatal(err)
+	}
+	defer os.Remove(file)
+
+	for key := range simple.Registry {
+		b.Run(fmt.Sprintf("HashFile_%s", key), func(b *testing.B) {
+			for b.Loop() {
+                if _, err := simple.HashFile(key, file); err != nil {
+                    b.Fatal(err)
+                }
+			}
+		})
+	}
+
+
+    hashKey := make([]byte, 128)
+    if _, err := rand.Read(hashKey); err != nil {
+        b.Fatal(err)
+    }
+	for key := range simple.RegistryKey {
+		b.Run(fmt.Sprintf("HashFile_%s", key), func(b *testing.B) {
+			for b.Loop() {
+                if _, err := simple.HashFileKey(key, hashKey, file); err != nil {
+                    b.Fatal(err)
+                }
+			}
+		})
 	}
 }

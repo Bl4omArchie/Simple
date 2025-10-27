@@ -8,7 +8,7 @@ While I am developing, I am improving the package day by day. Finding new ideas 
 
 # Features
 
-- Database management :   
+- Database management through ORM :   
     - Choose your preferred driver: MySQL, PostgreSQL, or SQLite
     - Simple methods: OpenDatabase(), CloseDatabase(), and standard SQL queries.
     - Thread-safe operations with internal mutexes.
@@ -56,25 +56,21 @@ While I am developing, I am improving the package day by day. Finding new ideas 
 - 🏁 **v1.0.0** : first release, full revision of the code + comments
 
 ## TODO :
-- fix leak issue with Query()
 - create new feature Context
 - make every feature support Context
 - improvement for Requests feature
-- add more encoding to deserialize
 - add suport for legacy hash registry
 
 ## v1 and further :
 
 - Better error model : no panic + set of sentinel errors ...
 - Security by default policy (i.e : for database, always setup the sslmode or support certificate for requets)
-- Support ORM for database 
-- Integration of workflows
 - Logging Hooks
 
 
 # Dependencies
 
-- Database features are based on the Go’s standard [database/sql](https://pkg.go.dev/database/sql) package
+- Orm features are based on [gorm](https://pkg.go.dev/gorm.io/gorm@v1.31.0) package
 - Requests features are based on Go’s standard [net/http](https://pkg.go.dev/net/http) package
 - Hash features are based on Go’s standard [crypto](golang.org/x/crypto) package
 - Env features are based on [gotenv](https://github.com/subosito/gotenv) package

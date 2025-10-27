@@ -1,6 +1,11 @@
 # Changelog
 
 
+**27/10/25**
+- update Database to Orm
+- new folder for tests
+- update for Hash
+
 **10/09/2025**
 - add new feature, Deserializer.
 - support the following file format : json, yaml, toml and xml. 
