@@ -1,6 +1,6 @@
 # Changelog
 
-**21/10/2025**
+**27/10/2025**
 - update GetTable() for Orm
 - add GetColumn() and OpenDatabase() for Orm
 - UpdateTable() -> UpdateColumnWhereValue()
