@@ -82,21 +82,7 @@ var RegistryKey = map[string]HashKeyFactory {
 	},
 }
 
-
-const (
-	KB = 1024
-	MB = KB * 1024
-
-	buf_32_kb  int = 32 * KB
-	buf_64_kb  int = 64 * KB
-	buf_1_mb   int = MB
-	buf_5_mb   int = 5 * MB
-	buf_10_mb  int = 10 * MB
-)
-
-
-// hash a file with moist effective buffer size
-// TODO : memory allocation improvement
+// hash a file with the given hash algorithm
 func HashFile(hash, filePath string) (string, error) {
     file, err := os.Open(filePath)
     if err != nil {
@@ -118,6 +104,7 @@ func HashFile(hash, filePath string) (string, error) {
 }
 
 
+// hash a file with the given hash algorithm from the RegistryKey
 func HashFileKey(hash string, key []byte, filePath string) (string, error) {
     file, err := os.Open(filePath)
     if err != nil {

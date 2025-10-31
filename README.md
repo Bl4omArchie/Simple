@@ -1,71 +1,110 @@
 # Simple package
 
-Simple is a lightweight Go package designed for utilities tasks.
-
-The package is currently in its early v1. The purpose of this package is to get simple functions with strong features like context management, easy configuration, algorithm efficiency or default security.
-While I am developing, I am improving the package day by day. Finding new ideas and ways to make the features even more simpler. Don't mind sharing your thoughts and advice.
+Simple is a Go package providing utilities tasks in order to reduces boilerplate code.
+Each file represent a feature 
 
 
 # Features
 
-- Database management through ORM :   
-    - Choose your preferred driver: MySQL, PostgreSQL, or SQLite
-    - Simple methods: OpenDatabase(), CloseDatabase(), and standard SQL queries.
-    - Thread-safe operations with internal mutexes.
-    - Use the provided Database struct or implement your own via the DatabaseManager interface.
+## ORM for database management
 
-- Web client management: :
-    - Make web requests more simple 
-    - Choose the client of your choice : http, Tor sock, your own proxy
-    - Fetch raw web content with GetContent().
-    - Parse HTML documents with GetParsedContent().
-    - Download files with DownloadDocument(), and with automatic sha-256 hash computation via DownloadDocumentReturnHash().
+- Choose your preferred driver: MySQL, PostgreSQL, or SQLite
+- Simple methods: Migrate(), GetBy(), GetTable() ...
 
-- Hash functions :
-    - Supported algorithms:
-        - sha-224, sha-256, sha-384, sha-512
-        - sha3 family (224, 256, 384, 512)
-        - shake-128, shake-256
-        - blake2b (256, 384, 512)
-        - blake2s (128, 256)
-        - md5 (legacy)
-        - sha1 (legacy)
-    - File hashing with optional buffer sizes for efficiency:
-        - Constants: buf_32_kb, buf_64_kb, buf_1_mb, buf_5_mb, buf_10_mb
-    - Compare files or hash arbitrary data.
+Example :
+```go
+db, err := simple.OpenDatabase(GetSqlite("path/to/my/database.db"))
+if err != nil {
+    fmt.Println(err)
+}
 
-- Environnement variables :
-    - Use the gotenv package to pick up your env variables easily
+simple.GetBy[&Book](db, "title", "The Go Programming Language Phrasebook")
+```
 
+## Web client management: :
+- Choose the client of your choice : http, Tor sock, your own proxy...
+- Fetch raw or pased HTML content
+- Download files with DownloadDocument(), and with automatic sha-256 hash computation via DownloadDocumentReturnHash().
 
-- Deserialize and parse files :
-    - open your files and parse the content into your struct
-    - supported file format : json, yaml, toml and xml
+Example :
+```go
+body, err := simple.GetContent("https://golangdocs.com", simple.HttpClient())
+if err != nil {
+    fmt.Println(err)
+}
 
+hash, err := simple.DownloadDocumentReturnHash("https://golangdocs.com/how-to-install-go-on-a-vps-server", "storage/file.html", simple.HttpClient())
+if err != nil {
+    fmt.Println(err)
+} else {
+    fmt.Println(hash)
+}
+```
+
+## Hash functions
+- Supported algorithms:
+    - sha-224, sha-256, sha-384, sha-512 and sha3 family
+    - shake (128, 256)
+    - blake2b (256, 384, 512) and blake2s (128, 256)
+    - legacy : md5 and sha1
+- File hashing
+- Compare files or hash arbitrary data.
+
+Example :
+```go
+sha_hash, err := simple.HashFile("sha3-512", "storage/file.html")
+if err != nil {
+    fmt.Println(err)
+} else {
+    fmt.Println(sha_hash)
+}
+
+blake_hash, err := simple.HashFileKey("blake2b-384", "mykey", "storage/file.html")
+if err != nil {
+    fmt.Println(err)
+} else {
+    fmt.Println(blake_hash)
+}
+```
+
+## File deserialization
+
+- A single function for deserializing data : LoadFile()
+- Supported file format : json, yaml, toml and xml
+- Use limit parameter to deserialize only a specific amount of elements
+- Set validation to true in order to apply tag validation from validator package
+
+Example :
+```go
+data_json, err := simple.LoadFile[DataJson]("test.json", 0, false)
+if err != nil {
+    fmt.Println(err)
+} else {
+    fmt.Println(data_json)
+}
+
+data_yaml, err := simple.LoadFile[DataYaml]("test2.json", 0, true)
+if err != nil {
+    fmt.Println(err)
+} else {
+    fmt.Println(data_json)
+}
+```
 
 # Development
 
-## v0 to v1 :
-- 🚩 **v0.1.0** : first commit
-- 🪜 **v0.2.0** : more feature for database and major rework of requests with a clean client management
-- 🪜 **v0.2.1** : add Hash feature
-- 🪜 **v0.2.2** : add Env feature + add Test and Mock + small improvements
-- 🪜 **v0.2.3** : rework of Database feature + small fixes and improvements
-- ➡️ **v0.2.4** : add new feature Deserializer for opening files like json or yaml and parse it into your struct
-- 👷‍♂️ **v0.2.5** : add Context as a new feature for easy context creation 
-- 🏁 **v1.0.0** : first release, full revision of the code + comments
+## v0 :
+- add first features : Orm, Hash, Requests, File, Env 
+- add **tests/** folder for mock and unit tests
+- add Readme, MIT License, Changelog
+- Code correction + comments +  cleaning
+
+## v1 :
+In coming
+
 
 ## TODO :
-- create new feature Context
-- make every feature support Context
-- improvement for Requests feature
-- add suport for legacy hash registry
-
-## v1 and further :
-
-- Better error model : no panic + set of sentinel errors ...
-- Security by default policy (i.e : for database, always setup the sslmode or support certificate for requets)
-- Logging Hooks
+- add support for Context
 
 
 # Dependencies
