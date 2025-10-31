@@ -1,7 +1,11 @@
 # Changelog
 
+**21/10/2025**
+- update GetTable() for Orm
+- add GetColumn() and OpenDatabase() for Orm
+- UpdateTable() -> UpdateColumnWhereValue()
 
-**27/10/25**
+**27/10/2025**
 - update Database to Orm
 - new folder for tests
 - update for Hash
