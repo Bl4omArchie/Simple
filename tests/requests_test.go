@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"testing"
 	"net/http"
 	"net/http/httptest"
@@ -14,8 +15,10 @@ func TestGetContentMock(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("hello world"))	}))
 	defer ts.Close()
 
+	var ctx context.Context
+
 	client := simple.HttpClient()
-	content, err := simple.GetContent(ts.URL, client)
+	content, err := simple.GetContent(ctx, ts.URL, client)
 	if err != nil {
 		t.Fatalf("GetContent failed: %v", err)
 	}

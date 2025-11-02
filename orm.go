@@ -2,6 +2,7 @@ package simple
 
 import (
     "fmt"
+	"context"
 
     "gorm.io/gorm"
 	"gorm.io/driver/mysql"
@@ -18,6 +19,7 @@ var registryDB = map[string]FactoryDB {
 }
 
 
+// Open a database manually or with function GetMysql(), GetPostgres() anb GetSqlite()
 func OpenDatabase(driver string, dsn string) (*gorm.DB, error) {
 	factory, ok := registryDB[driver]
 	if !ok {
@@ -32,41 +34,46 @@ func OpenDatabase(driver string, dsn string) (*gorm.DB, error) {
 	return db, nil
 }
 
-func Migrate(odb *gorm.DB, models ...any) error {
-    err := odb.AutoMigrate(models...)
+// Database migration
+func Migrate(ctx context.Context, odb *gorm.DB, models ...any) error {
+    err := odb.WithContext(ctx).AutoMigrate(models...)
     return err
 }
 
-func GetBy[T any](odb *gorm.DB, key string, value string) (*T, error) {
+// For a given table, find a specific value in a specific column (key)
+func GetBy[T any](ctx context.Context, odb *gorm.DB, key string, value string) (*T, error) {
 	var model T
-	if err := odb.First(&model, fmt.Sprintf("%s = ?", key), value).Error; err != nil {
+	if err := odb.WithContext(ctx).First(&model, fmt.Sprintf("%s = ?", key), value).Error; err != nil {
 		return nil, fmt.Errorf("GetBy, invalid inputs: %w", err)
 	}
 	return &model, nil
 }
 
-func GetTable[T any](odb *gorm.DB) ([]T, error) {
+// Get the whole given table
+func GetTable[T any](ctx context.Context, odb *gorm.DB) ([]T, error) {
 	var model []T
-	if err := odb.Find(&model).Error; err != nil {
+	if err := odb.WithContext(ctx).Find(&model).Error; err != nil {
 		return nil, fmt.Errorf("GetTable, invalid inputs: %w", err)
 	}
 	return model, nil
 }
 
-func GetColumn[T any, C any](odb *gorm.DB, columnName string) ([]C, error) {
+// Get a specific column in your table
+func GetColumn[T any, C any](ctx context.Context, odb *gorm.DB, columnName string) ([]C, error) {
 	var model T
 	var values []C
-	if err := odb.Model(&model).Pluck(columnName, &values).Error; err != nil {
+	if err := odb.WithContext(ctx).Model(&model).Pluck(columnName, &values).Error; err != nil {
 		return nil, fmt.Errorf("GetColumn, invalid inputs: %w", err)
 	}
 	return values, nil
 }
 
-func UpdateColumnWhereValue[T any](odb *gorm.DB, key string, value string, newColumn string, newValue string) (*T, error) {
+// In a specific column (key), modify the value (newValue) of the given row's value
+func UpdateColumnWhereValue[T any](ctx context.Context, odb *gorm.DB, key, value, newValue string) (*T, error) {
 	var model T
-	if err := odb.Model(&model).
+	if err := odb.WithContext(ctx).Model(&model).
 		Where(fmt.Sprintf("%s = ?", key), value).
-		Update(newColumn, newValue).Error; err != nil {
+		Update(key, newValue).Error; err != nil {
 		return nil, fmt.Errorf("couldn't update row %s = %s: %w", key, value, err)
 	}
 	return &model, nil

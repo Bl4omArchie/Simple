@@ -5,6 +5,7 @@ import (
 	"io"
 	"fmt"
 	"time"
+	"context"
 	"net/http"
 	"crypto/sha256"
 	"path/filepath"
@@ -16,8 +17,8 @@ import (
 
 // Get the body of a webpage.
 // Give the url and it will return the html body
-func GetContent(url string, client *http.Client) ([]byte, error) {
-	body, err := fetchBody(url, client)
+func GetContent(ctx context.Context, url string, client *http.Client) ([]byte, error) {
+	body, err := fetchBody(ctx, url, "get", client)
 	if err != nil {
 		return nil, err
 	}
@@ -28,8 +29,8 @@ func GetContent(url string, client *http.Client) ([]byte, error) {
 
 // Get the body and parse it.
 // The package net/html allow to parse a html body into nodes to easily retrieve every html tags
-func GetParsedContent(url string, client *http.Client) (*html.Node, error) {
-	body, err := fetchBody(url, client)
+func GetParsedContent(ctx context.Context, url string, client *http.Client) (*html.Node, error) {
+	body, err := fetchBody(ctx, url, "get", client)
 	if err != nil {
 		return nil, err
 	}
@@ -39,8 +40,13 @@ func GetParsedContent(url string, client *http.Client) (*html.Node, error) {
 }
 
 // Core function to get a webpage body 
-func fetchBody(url string, client *http.Client) (io.ReadCloser, error) {
-	resp, err := client.Get(url)
+func fetchBody(ctx context.Context, url string, requestType string, client *http.Client) (io.ReadCloser, error) {
+    req, err := http.NewRequestWithContext(ctx, requestType, url, nil)
+    if err!= nil {
+        return nil, err
+    }
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -82,8 +88,8 @@ func OnionClient() (*http.Client, error) {
 
 // download a document
 // give the url, the filepath where you want to store the document and the client
-func DownloadDocument(url string, filePath string, client *http.Client) error {
-	body, err := fetchBody(url, client)
+func DownloadDocument(ctx context.Context, url string, filePath string, client *http.Client) error {
+	body, err := fetchBody(ctx, url, "get", client)
 	if err != nil {
 		return fmt.Errorf("failed to fetch body: %w", err)
 	}
@@ -107,8 +113,8 @@ func DownloadDocument(url string, filePath string, client *http.Client) error {
 }
 
 // download a document and return its hash value 
-func DownloadDocumentReturnHash(url string, filePath string, client *http.Client) (string, error) {
-	body, err := fetchBody(url, client)
+func DownloadDocumentReturnHash(ctx context.Context, url string, filePath string, client *http.Client) (string, error) {
+	body, err := fetchBody(ctx, url, "get", client)
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch body: %w", err)
 	}

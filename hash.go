@@ -1,15 +1,15 @@
 package simple
 
 import (
-	"encoding/hex"
-	"fmt"
-	"hash"
 	"io"
 	"os"
+	"fmt"
+	"hash"
 	"strings"
 
 	"crypto/md5"
 	"crypto/sha1"
+	"encoding/hex"
 	"crypto/sha256"
 	"crypto/sha512"
 
@@ -25,7 +25,6 @@ type shakeAdapter struct {
 	length int
 }
 var _ hash.Hash = (*shakeAdapter)(nil)
-
 
 func (x *shakeAdapter) Write(p []byte) (int, error) { return x.shake.Write(p) }
 func (x *shakeAdapter) Sum(b []byte) []byte {

@@ -9,16 +9,18 @@ Each file represent a feature
 ## ORM for database management
 
 - Choose your preferred driver: MySQL, PostgreSQL, or SQLite
-- Simple methods: Migrate(), GetBy(), GetTable() ...
+- Simple methods: Migrate(), GetBy(), GetTable(), GetColumn() ...
 
 Example :
 ```go
+var ctx context.Context
+
 db, err := simple.OpenDatabase(GetSqlite("path/to/my/database.db"))
 if err != nil {
     fmt.Println(err)
 }
 
-simple.GetBy[&Book](db, "title", "The Go Programming Language Phrasebook")
+simple.GetBy[&Book](ctx, db, "title", "The Go Programming Language Phrasebook")
 ```
 
 ## Web client management: :
@@ -28,12 +30,13 @@ simple.GetBy[&Book](db, "title", "The Go Programming Language Phrasebook")
 
 Example :
 ```go
-body, err := simple.GetContent("https://golangdocs.com", simple.HttpClient())
+var ctx context.Context
+body, err := simple.GetContent("https://golangdocs.com", simple.HttpClient(), ctx)
 if err != nil {
     fmt.Println(err)
 }
 
-hash, err := simple.DownloadDocumentReturnHash("https://golangdocs.com/how-to-install-go-on-a-vps-server", "storage/file.html", simple.HttpClient())
+hash, err := simple.DownloadDocumentReturnHash("https://golangdocs.com/how-to-install-go-on-a-vps-server", "storage/file.html", simple.HttpClient(), ctx)
 if err != nil {
     fmt.Println(err)
 } else {
@@ -83,7 +86,7 @@ if err != nil {
     fmt.Println(data_json)
 }
 
-data_yaml, err := simple.LoadFile[DataYaml]("test2.json", 0, true)
+data_yaml, err := simple.LoadFile[DataYaml]("test2.yaml", 0, true)
 if err != nil {
     fmt.Println(err)
 } else {
@@ -97,15 +100,11 @@ if err != nil {
 - add first features : Orm, Hash, Requests, File, Env 
 - add **tests/** folder for mock and unit tests
 - add Readme, MIT License, Changelog
-- Code correction + comments +  cleaning
+- Code correction + comments + cleaning
 
 ## v1 :
-In coming
-
-
-## TODO :
-- add support for Context
-
+- add context for Orm and Requests
+- New feature on File : Unzip()
 
 # Dependencies
 

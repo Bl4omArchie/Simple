@@ -1,5 +1,10 @@
 # Changelog
 
+**02/11/2025** :
+- Add context support for Orm and Requests
+- Add Unzip() function
+- Commentaries for Orm, and File
+
 **31/08/2025** : Release of v1
 
 **27/10/2025** : Add Orm feature
