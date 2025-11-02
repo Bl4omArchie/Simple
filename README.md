@@ -31,16 +31,26 @@ simple.GetBy[&Book](ctx, db, "title", "The Go Programming Language Phrasebook")
 Example :
 ```go
 var ctx context.Context
-body, err := simple.GetContent("https://golangdocs.com", simple.HttpClient(), ctx)
+body, err := simple.GetContent(ctx, "https://golangdocs.com", simple.HttpClient(), nil)
 if err != nil {
     fmt.Println(err)
 }
 
-hash, err := simple.DownloadDocumentReturnHash("https://golangdocs.com/how-to-install-go-on-a-vps-server", "storage/file.html", simple.HttpClient(), ctx)
+hash, err := simple.DownloadDocumentReturnHash(ctx, "https://golangdocs.com/how-to-install-go-on-a-vps-server", "storage/file.html", simple.HttpClient(), nil)
 if err != nil {
     fmt.Println(err)
 } else {
     fmt.Println(hash)
+}
+
+//Custom request
+body, err := simple.GetContent(ctx, "https://example.com/api", simple.HttpClient(), func(req *http.Request) error {
+	req.Header.Set("User-Agent", "Go-http-client/1.1")
+	req.Header.Set("Accept", "*/*")
+    return nil
+})
+if err != nil {
+    fmt.Println(err)
 }
 ```
 
@@ -70,12 +80,12 @@ if err != nil {
 }
 ```
 
-## File deserialization
+## File
 
-- A single function for deserializing data : LoadFile()
-- Supported file format : json, yaml, toml and xml
-- Use limit parameter to deserialize only a specific amount of elements
-- Set validation to true in order to apply tag validation from validator package
+- Deserialization : 
+    - one function for multiple file format support (json, yaml, toml and xml)
+    - Use limit parameter to deserialize only a specific amount of elements
+    - Set validation to true in order to apply tag validation from validator package
 
 Example :
 ```go
@@ -86,12 +96,15 @@ if err != nil {
     fmt.Println(data_json)
 }
 
-data_yaml, err := simple.LoadFile[DataYaml]("test2.yaml", 0, true)
+data_yaml, err = simple.LoadFile[DataYaml]("test2.yaml", 0, true)
 if err != nil {
     fmt.Println(err)
 } else {
     fmt.Println(data_json)
 }
+
+err = simple.Unzip()
+
 ```
 
 # Development

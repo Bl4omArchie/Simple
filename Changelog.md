@@ -2,8 +2,10 @@
 
 **02/11/2025** :
 - Add context support for Orm and Requests
+- Add custom request for Requests
 - Add Unzip() function
-- Commentaries for Orm, and File
+- Comment for Orm, and File
+- Add a mock for DownloadDocument and GetContentWithCustomReq
 
 **31/08/2025** : Release of v1
 
