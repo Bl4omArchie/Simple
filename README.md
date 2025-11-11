@@ -9,7 +9,7 @@ Each file represent a feature
 ## ORM for database management
 
 - Choose your preferred driver: MySQL, PostgreSQL, or SQLite
-- Simple methods: Migrate(), GetBy(), GetTable(), GetColumn() ...
+- Simple methods: Migrate(), GetRowBy(), GetRows(), UpdateRowBy(), DeleteRowBy() and CountRows()
 
 Example :
 ```go
@@ -20,7 +20,12 @@ if err != nil {
     fmt.Println(err)
 }
 
-simple.GetBy[&Book](ctx, db, "title", "The Go Programming Language Phrasebook")
+book, err := simple.GetRowBy[&Book](ctx, db, "title", "The Go Programming Language Phrasebook")
+if err != nil {
+    fmt.Println(err)
+} else {
+    fmt.Println(book.Title)
+}
 ```
 
 ## Web client management: :
@@ -118,6 +123,7 @@ err = simple.Unzip()
 ## v1 :
 - add context for Orm and Requests
 - New feature on File : Unzip()
+- Improved ORM functions
 
 # Dependencies
 

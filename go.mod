@@ -3,6 +3,7 @@ module github.com/Bl4omArchie/simple
 go 1.24.5
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/joho/godotenv v1.5.1
 	github.com/pelletier/go-toml v1.9.5

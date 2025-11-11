@@ -1,5 +1,11 @@
 # Changelog
 
+**11/11/2025** :
+- Improved ORM queries with : GetRowBy(), GetRows(), UpdateRowBy(), DeleteRowBy() and CountRows()
+- Improved comments
+- Add a new mock for ORM
+- Update Readme for ORM examples
+
 **02/11/2025** :
 - Add context support for Orm and Requests
 - Add custom request for Requests

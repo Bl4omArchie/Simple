@@ -20,7 +20,7 @@ var registryDB = map[string]FactoryDB {
 
 
 // Open a database manually or with function GetMysql(), GetPostgres() anb GetSqlite()
-func OpenDatabase(driver string, dsn string) (*gorm.DB, error) {
+func OpenDatabase(driver, dsn string) (*gorm.DB, error) {
 	factory, ok := registryDB[driver]
 	if !ok {
 		return nil, fmt.Errorf("unsupported driver: %s", driver)
@@ -40,43 +40,61 @@ func Migrate(ctx context.Context, odb *gorm.DB, models ...any) error {
     return err
 }
 
-// For a given table, find a specific value in a specific column (key)
-func GetBy[T any](ctx context.Context, odb *gorm.DB, key string, value string) (*T, error) {
+// GetRowBy returns the first record of type T where column `key` equals `value`.
+func GetRowBy[T any](ctx context.Context, db *gorm.DB, key string, value any) (*T, error) {
 	var model T
-	if err := odb.WithContext(ctx).First(&model, fmt.Sprintf("%s = ?", key), value).Error; err != nil {
-		return nil, fmt.Errorf("GetBy, invalid inputs: %w", err)
-	}
-	return &model, nil
-}
-
-// Get the whole given table
-func GetTable[T any](ctx context.Context, odb *gorm.DB) ([]T, error) {
-	var model []T
-	if err := odb.WithContext(ctx).Find(&model).Error; err != nil {
-		return nil, fmt.Errorf("GetTable, invalid inputs: %w", err)
-	}
-	return model, nil
-}
-
-// Get a specific column in your table
-func GetColumn[T any, C any](ctx context.Context, odb *gorm.DB, columnName string) ([]C, error) {
-	var model T
-	var values []C
-	if err := odb.WithContext(ctx).Model(&model).Pluck(columnName, &values).Error; err != nil {
-		return nil, fmt.Errorf("GetColumn, invalid inputs: %w", err)
-	}
-	return values, nil
-}
-
-// In a specific column (key), modify the value (newValue) of the given row's value
-func UpdateColumnWhereValue[T any](ctx context.Context, odb *gorm.DB, key, value, newValue string) (*T, error) {
-	var model T
-	if err := odb.WithContext(ctx).Model(&model).
+	if err := db.WithContext(ctx).
 		Where(fmt.Sprintf("%s = ?", key), value).
-		Update(key, newValue).Error; err != nil {
-		return nil, fmt.Errorf("couldn't update row %s = %s: %w", key, value, err)
+		First(&model).Error; err != nil {
+			return nil, fmt.Errorf("GetRowBy: %w", err)
 	}
 	return &model, nil
+}
+
+// GetRows return every rows of the given table `T`
+// Set the limit of rows with `limiy`. Use -1 to get every rows
+func GetRows[T any](ctx context.Context, db *gorm.DB, limit int) ([]T, error) {
+	var models []T
+	if err := db.WithContext(ctx).
+		Limit(limit).
+		Find(&models).
+		Error; err != nil {
+			return nil, fmt.Errorf("GetRows: %w", err)
+	}
+	return models, nil
+}
+
+// Updates rows where column `key` equals `value`
+func UpdateRowBy[T any](ctx context.Context, db *gorm.DB, key string, value any, field string, newValue any) error {
+	if err := db.WithContext(ctx).
+		Model(new(T)).
+		Where(fmt.Sprintf("%s = ?", key), value).
+		Update(field, newValue).Error; err != nil {
+			return fmt.Errorf("UpdateRowBy: %w", err)
+	}
+    return nil
+}
+
+// Deletes rows where column `key` equals `value`
+func DeleteRowBy[T any](ctx context.Context, db *gorm.DB, key string, value any) error {
+	if err := db.WithContext(ctx).
+		Where(fmt.Sprintf("%s = ?", key), value).
+		Delete(new(T)).Error; err != nil {
+		return fmt.Errorf("DeleteRowBy: %w", err)
+	}
+    return nil
+}
+
+// Counts how much rows there is in your table
+func CountRows[T any](ctx context.Context, db *gorm.DB) (int64, error) {
+    var count int64
+
+    if err := db.WithContext(ctx).
+		Model(new(T)).
+		Count(&count).Error; err != nil {
+        	return 0, fmt.Errorf("CountRows: %w", err)
+    	}
+    return count, nil
 }
 
 
