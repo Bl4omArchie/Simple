@@ -44,24 +44,48 @@ func Migrate(ctx context.Context, odb *gorm.DB, models ...any) error {
 func GetRowBy[T any](ctx context.Context, db *gorm.DB, key string, value any) (*T, error) {
 	var model T
 	if err := db.WithContext(ctx).
-		Where(fmt.Sprintf("%s = ?", key), value).
+		Where("? = ?", key, value).
 		First(&model).Error; err != nil {
-			return nil, fmt.Errorf("GetRowBy: %w", err)
+			return nil, fmt.Errorf("GetRowBy for key `%s` and value `%s`. %w", key, value, err)
 	}
 	return &model, nil
 }
 
-// GetRows return every rows of the given table `T`
-// Set the limit of rows with `limiy`. Use -1 to get every rows
-func GetRows[T any](ctx context.Context, db *gorm.DB, limit int) ([]T, error) {
+// GetRowsBy returns every record of type T where column `key` equals `value`.
+func GetRowsBy[T any](ctx context.Context, db *gorm.DB, key string, value any) ([]T, error) {
+	var model []T
+	if err := db.WithContext(ctx).
+		Where("? = ?", key, value).
+		Find(&model).Error; err != nil {
+			return nil, fmt.Errorf("GetRowsBy for key `%s` and value `%s`. %w", key, value, err)
+	}
+	return model, nil
+}
+
+// GetTable return every rows of the given table `T`
+// Set the limit of rows with `limit`. Use -1 to get every rows
+func GetTable[T any](ctx context.Context, db *gorm.DB, limit int) ([]T, error) {
 	var models []T
 	if err := db.WithContext(ctx).
 		Limit(limit).
 		Find(&models).
 		Error; err != nil {
-			return nil, fmt.Errorf("GetRows: %w", err)
+			return nil, fmt.Errorf("GetTable: %w", err)
 	}
 	return models, nil
+}
+
+// GetColumn returns a specific column of your table `T`of type `C`.
+func GetColumn[T any, C any](ctx context.Context, odb *gorm.DB, columnName string) ([]C, error) {
+	var model T
+	var values []C
+	if err := odb.WithContext(ctx).
+		Model(&model).
+		Pluck(columnName, &values).
+		Error; err != nil {
+			return nil, fmt.Errorf("GetColumn for columnName : `%s`. %w", columnName, err)
+	}
+	return values, nil
 }
 
 // Updates rows where column `key` equals `value`

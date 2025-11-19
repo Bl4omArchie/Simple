@@ -14,7 +14,7 @@ type User struct {
     Name string
 }
 
-func TestGetRowBy(t *testing.T) {
+func TestBasicOperationOnSqlite(t *testing.T) {
     gormDB, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
     if err != nil {
         t.Fatalf("failed to open gorm db: %v", err)
