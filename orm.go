@@ -44,7 +44,7 @@ func Migrate(ctx context.Context, odb *gorm.DB, models ...any) error {
 func GetRowBy[T any](ctx context.Context, db *gorm.DB, key string, value any) (*T, error) {
 	var model T
 	if err := db.WithContext(ctx).
-		Where("? = ?", key, value).
+		Where(fmt.Sprintf("%s = ?"), key, value).
 		First(&model).Error; err != nil {
 			return nil, fmt.Errorf("GetRowBy for key `%s` and value `%s`. %w", key, value, err)
 	}
@@ -55,7 +55,7 @@ func GetRowBy[T any](ctx context.Context, db *gorm.DB, key string, value any) (*
 func GetRowsBy[T any](ctx context.Context, db *gorm.DB, key string, value any) ([]T, error) {
 	var model []T
 	if err := db.WithContext(ctx).
-		Where("? = ?", key, value).
+		Where(fmt.Sprintf("%s = ?"), key, value).
 		Find(&model).Error; err != nil {
 			return nil, fmt.Errorf("GetRowsBy for key `%s` and value `%s`. %w", key, value, err)
 	}
